@@ -1,0 +1,6 @@
+{
+  // Chinese prose is not hard-wrapped, so line length is not enforced.
+  "config": {
+    "MD013": false
+  }
+}
