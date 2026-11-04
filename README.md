@@ -28,6 +28,18 @@ curl http://127.0.0.1:8000/
 {"message": "Hello, World!"}
 ```
 
+`POST /tickets/<ticket_id>/cancel`：取消工单 mock 接口，不修改任何真实数据，直接返回取消成功。
+
+```bash
+curl -X POST http://127.0.0.1:8000/tickets/T-1001/cancel
+```
+
+响应：
+
+```json
+{"ticket_id": "T-1001", "status": "cancelled"}
+```
+
 ### 测试
 
 ```bash

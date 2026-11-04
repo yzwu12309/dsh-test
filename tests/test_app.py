@@ -24,10 +24,12 @@ class HelloWorldApiTest(unittest.TestCase):
         cls.server.server_close()
         cls.thread.join(timeout=2)
 
-    def request(self, path: str) -> tuple[int, str | None, bytes]:
+    def request(
+        self, path: str, method: str = "GET"
+    ) -> tuple[int, str | None, bytes]:
         connection = HTTPConnection("127.0.0.1", self.port, timeout=2)
         try:
-            connection.request("GET", path)
+            connection.request(method, path)
             response = connection.getresponse()
             return (
                 response.status,
@@ -46,6 +48,23 @@ class HelloWorldApiTest(unittest.TestCase):
 
     def test_unknown_path_returns_404(self) -> None:
         status, _, body = self.request("/missing")
+
+        self.assertEqual(status, 404)
+        self.assertEqual(json.loads(body), {"error": "Not Found"})
+
+    def test_cancel_ticket(self) -> None:
+        status, content_type, body = self.request(
+            "/tickets/T-1001/cancel", method="POST"
+        )
+
+        self.assertEqual(status, 200)
+        self.assertEqual(content_type, "application/json; charset=utf-8")
+        self.assertEqual(
+            json.loads(body), {"ticket_id": "T-1001", "status": "cancelled"}
+        )
+
+    def test_cancel_unknown_path_returns_404(self) -> None:
+        status, _, body = self.request("/tickets/T-1001", method="POST")
 
         self.assertEqual(status, 404)
         self.assertEqual(json.loads(body), {"error": "Not Found"})

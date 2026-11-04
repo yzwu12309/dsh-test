@@ -1,4 +1,4 @@
-"""最简 Python Web 应用：一个返回 Hello World 的接口。"""
+"""最简 Python Web 应用：Hello World 与取消工单 mock 接口。"""
 
 from __future__ import annotations
 
@@ -6,10 +6,11 @@ import json
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
+from urllib.parse import unquote
 
 
 class HelloWorldHandler(BaseHTTPRequestHandler):
-    """处理 GET /，返回 Hello World。"""
+    """处理 Hello World 与取消工单 mock 接口。"""
 
     def do_GET(self) -> None:
         path = self.path.split("?", 1)[0]
@@ -17,6 +18,23 @@ class HelloWorldHandler(BaseHTTPRequestHandler):
             self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not Found"})
             return
         self._send_json(HTTPStatus.OK, {"message": "Hello, World!"})
+
+    def do_POST(self) -> None:
+        path = self.path.split("?", 1)[0].strip("/")
+        parts = path.split("/") if path else []
+        if (
+            len(parts) == 3
+            and parts[0] == "tickets"
+            and parts[1]
+            and parts[2] == "cancel"
+        ):
+            ticket_id = unquote(parts[1])
+            self._send_json(
+                HTTPStatus.OK,
+                {"ticket_id": ticket_id, "status": "cancelled"},
+            )
+            return
+        self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not Found"})
 
     def _send_json(self, status: HTTPStatus, payload: dict[str, Any]) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
